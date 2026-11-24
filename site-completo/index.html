@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Black and White Barber Shop</title>
+    <meta name="description" content="Black and White Barber Shop, barrio La Esperanza, San José del Guaviare. Mira quién está libre y separa tu turno en un minuto.">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="color-scheme" content="dark light">
+    <meta property="og:title" content="Black and White Barber Shop">
+    <meta property="og:description" content="Mira quién está libre hoy y separa tu turno en un minuto.">
+    <meta property="og:image" content="images/og.png">
+    <meta property="og:type" content="website">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="apple-touch-icon" href="images/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="B&amp;W Barber">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="site.css">
+</head>
+<body>
+    <p class="demo-bar" id="demo-bar" hidden>Modo demo: los turnos se guardan solo en este navegador. <a href="panel.html">Panel de barberos</a></p>
+
+    <header class="bar" id="bar">
+        <a href="#inicio" class="bar-brand" aria-label="Inicio">
+            <span class="mark" aria-hidden="true">B<i>&amp;</i>W</span>
+        </a>
+        <nav class="bar-nav" aria-label="Secciones">
+            <a href="#libres">Quién está libre</a>
+            <a href="#precios">Precios</a>
+            <a href="#visitanos">Cómo llegar</a>
+        </nav>
+        <button type="button" class="bar-cta" data-book>Separar turno</button>
+    </header>
+
+    <main>
+        <!-- ============ PORTADA: literalmente blanco y negro ============ -->
+        <section class="hero" id="inicio">
+            <h1 class="hero-title">
+                <span class="hero-black">
+                    <span class="status" id="status"><span class="dot"></span><span id="status-text">Revisando horario…</span></span>
+                    <span class="word word-black">Black</span>
+                </span>
+                <span class="amp" aria-hidden="true">&amp;</span>
+                <span class="visually-hidden">and</span>
+                <span class="hero-white">
+                    <span class="word word-white">White</span>
+                    <span class="hero-sub">Barber Shop <em>San José del Guaviare</em></span>
+                </span>
+            </h1>
+            <div class="hero-actions">
+                <button type="button" class="btn btn-gold" data-book>Separar turno</button>
+                <a href="#libres" class="btn btn-ghost" id="next-free-btn">Ver quién está libre</a>
+            </div>
+            <button type="button" class="install" id="install-btn" hidden>
+                <span class="install-ico" aria-hidden="true">↓</span>
+                <span><strong>Instala la app</strong><small>Queda el ícono B&amp;W en tu celular</small></span>
+            </button>
+            <p class="install-ios" id="install-ios" hidden>Para instalarla en iPhone: toca Compartir y luego "Agregar a inicio".</p>
+        </section>
+
+        <!-- ============ QUIÉN ESTÁ LIBRE (en vivo) ============ -->
+        <section class="band band-black" id="libres">
+            <div class="band-head">
+                <h2>¿Quién está libre hoy?</h2>
+                <p class="live" id="live"><span class="live-dot" aria-hidden="true"></span><span id="live-text">En vivo</span></p>
+                <p id="libres-sub">Toca un barbero para separar con él.</p>
+            </div>
+            <div class="rail" id="rail" tabindex="0" aria-label="Barberos"></div>
+            <div class="rail-nav" aria-hidden="true">
+                <button type="button" class="rail-btn" data-rail="-1">‹</button>
+                <button type="button" class="rail-btn" data-rail="1">›</button>
+            </div>
+            <p class="walkin"><strong>¿Vas pasando?</strong> Llega cuando quieras, también atendemos por orden de llegada.</p>
+        </section>
+
+        <!-- ============ PRECIOS ============ -->
+        <section class="band band-white" id="precios">
+            <div class="band-head">
+                <h2>Precios</h2>
+                <p>Sin sorpresas. Lo que ves es lo que pagas.</p>
+            </div>
+            <div class="menu" id="menu"></div>
+            <button type="button" class="btn btn-black btn-wide" data-book>Separar turno</button>
+        </section>
+
+        <!-- ============ TRABAJOS (aparece cuando haya fotos) ============ -->
+        <section class="band band-black" id="trabajos" hidden>
+            <div class="band-head"><h2>Trabajos</h2><p>Hechos en nuestras sillas.</p></div>
+            <div class="rail rail-photos" id="gallery"></div>
+        </section>
+
+        <!-- ============ VISÍTANOS ============ -->
+        <section class="band band-white" id="visitanos">
+            <div class="band-head">
+                <h2>Visítanos</h2>
+                <p data-config="address"></p>
+            </div>
+            <div class="visit">
+                <div>
+                    <ul class="hours" id="hours-list"></ul>
+                    <div class="pay" id="payments"></div>
+                    <div class="visit-actions">
+                        <a class="btn btn-black" id="map-link" href="#" target="_blank" rel="noopener">Abrir en Google Maps</a>
+                        <a class="btn btn-line" id="wa-link" href="#" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+                    </div>
+                </div>
+                <div class="visit-map"><iframe id="map-frame" title="Mapa de la barbería" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="foot">
+        <span class="mark mark-big" aria-hidden="true">B<i>&amp;</i>W</span>
+        <p class="foot-name" data-config="name">Black and White Barber Shop</p>
+        <div class="social" id="social-links"></div>
+        <p class="foot-small">© <span id="year"></span> <span data-config="name"></span></p>
+        <p class="foot-small"><a href="panel.html">Panel de barberos</a></p>
+    </footer>
+
+    <a class="wa-float" id="whatsapp-float" href="#" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp"><span data-icon="whatsapp"></span></a>
+
+    <!-- ============ VENTANA PARA SEPARAR TURNO (paso a paso) ============ -->
+    <div class="sheet-wrap" id="sheet-wrap" hidden>
+        <div class="sheet-backdrop" data-close></div>
+        <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+            <div class="sheet-grab" aria-hidden="true"></div>
+            <header class="sheet-head">
+                <button type="button" class="icon-btn" id="sheet-back" aria-label="Atrás">‹</button>
+                <div class="sheet-titles">
+                    <p class="sheet-step" id="sheet-step">Paso 1 de 4</p>
+                    <h2 id="sheet-title">¿Con quién?</h2>
+                </div>
+                <button type="button" class="icon-btn" data-close aria-label="Cerrar">✕</button>
+            </header>
+            <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+
+            <div class="sheet-body" id="sheet-body">
+                <!-- Paso 1: barbero -->
+                <div class="step" data-step="1">
+                    <div class="pick-list" id="pick-barber" role="radiogroup" aria-label="Barbero"></div>
+                </div>
+                <!-- Paso 2: servicio -->
+                <div class="step" data-step="2" hidden>
+                    <div class="pick-list" id="pick-service"></div>
+                </div>
+                <!-- Paso 3: día y hora -->
+                <div class="step" data-step="3" hidden>
+                    <div class="cal" id="pick-day" role="radiogroup" aria-label="Día"></div>
+                    <p class="cal-picked" id="cal-picked"></p>
+                    <div class="slots" id="pick-slot" role="radiogroup" aria-label="Hora"></div>
+                </div>
+                <!-- Paso 4: datos -->
+                <div class="step" data-step="4" hidden>
+                    <div class="summary" id="summary"></div>
+                    <label class="field"><span>Tu nombre</span>
+                        <input type="text" id="client-name" autocomplete="given-name" enterkeyhint="next"></label>
+                    <label class="field"><span>Tu celular</span>
+                        <input type="tel" id="client-phone" inputmode="numeric" placeholder="300 123 4567" autocomplete="tel-national" enterkeyhint="done"></label>
+                    <p class="fine">Tu celular solo lo ve tu barbero, por si necesita avisarte algo.</p>
+                </div>
+                <!-- Listo -->
+                <div class="step step-done" data-step="5" hidden>
+                    <div class="done-check" aria-hidden="true"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg></div>
+                    <h3 id="done-title">¡Listo! Tu turno quedó separado</h3>
+                    <div class="summary" id="done-summary"></div>
+                    <p class="fine">Llega 5 minutos antes. Si no puedes ir, avísanos para darle el turno a otra persona.</p>
+                    <a class="btn btn-line btn-wide" id="cancel-link" href="#" target="_blank" rel="noopener">Avisar que no puedo ir</a>
+                </div>
+            </div>
+
+            <footer class="sheet-foot" id="sheet-foot">
+                <div class="sheet-total"><span>Total</span><strong id="sheet-total">$0</strong></div>
+                <button type="button" class="btn btn-gold" id="sheet-next">Siguiente</button>
+            </footer>
+            <p class="sheet-error" id="sheet-error" role="alert"></p>
+        </section>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="config.js"></script>
+    <script src="common.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
