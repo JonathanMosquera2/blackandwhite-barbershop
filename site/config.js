@@ -30,13 +30,15 @@ const CONFIG = {
     //   photo: "images/darwin.webp" cuando haya foto. Mientras tanto se usa el emoji
     //   specialty: opcional, ej. "Fades y diseños"
     //   email: el usuario con el que entra al panel (no tiene que ser un correo real)
+    //   whatsapp: OPCIONAL, solo si el barbero está de acuerdo. 57 + número, ej. "573101234567".
+    //             Vacío "" = no se muestra ningún número de ese barbero.
     barbers: [
-        { id: "darwin",  name: "Darwin",  specialty: "", days: [1,2,3,4,5,6],   emoji: "🧔", photo: "", email: "darwin@blackandwhite.co" },
-        { id: "andy",    name: "Andy",    specialty: "", days: [1,2,3,4,5,6],   emoji: "👨", photo: "", email: "andy@blackandwhite.co" },
-        { id: "jackson", name: "Jackson", specialty: "", days: [1,2,3,4,5,6,0], emoji: "🧑", photo: "", email: "jackson@blackandwhite.co" },
-        { id: "didier",  name: "Didier",  specialty: "", days: [1,2,3,4,5,6,0], emoji: "👨‍🦱", photo: "", email: "didier@blackandwhite.co" },
-        { id: "juan",    name: "Juan",    specialty: "", days: [1,2,3,4,5,6],   emoji: "👱", photo: "", email: "juan@blackandwhite.co" },
-        { id: "arley",   name: "Arley",   specialty: "", days: [1,2,3,4,5,6],   emoji: "🧔‍♂️", photo: "", email: "arley@blackandwhite.co" },
+        { id: "darwin",  name: "Darwin",  specialty: "", days: [1,2,3,4,5,6],   emoji: "🧔", photo: "", whatsapp: "", email: "darwin@blackandwhite.co" },
+        { id: "andy",    name: "Andy",    specialty: "", days: [1,2,3,4,5,6],   emoji: "👨", photo: "", whatsapp: "", email: "andy@blackandwhite.co" },
+        { id: "jackson", name: "Jackson", specialty: "", days: [1,2,3,4,5,6,0], emoji: "🧑", photo: "", whatsapp: "", email: "jackson@blackandwhite.co" },
+        { id: "didier",  name: "Didier",  specialty: "", days: [1,2,3,4,5,6,0], emoji: "👨‍🦱", photo: "", whatsapp: "", email: "didier@blackandwhite.co" },
+        { id: "juan",    name: "Juan",    specialty: "", days: [1,2,3,4,5,6],   emoji: "👱", photo: "", whatsapp: "", email: "juan@blackandwhite.co" },
+        { id: "arley",   name: "Arley",   specialty: "", days: [1,2,3,4,5,6],   emoji: "🧔‍♂️", photo: "", whatsapp: "", email: "arley@blackandwhite.co" },
     ],
     ownerName: "John Edisson",               // ✏️ nombre del dueño (sale en el panel)
     ownerEmail: "johnedisson@blackandwhite.co",   // ✏️ usuario del dueño para el panel

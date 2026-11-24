@@ -101,8 +101,11 @@ function renderRail() {
                 <div><p class="free-name">${esc(b.name)}</p>${b.specialty ? `<p class="free-spec">${esc(b.specialty)}</p>` : ""}</div></div>
             ${when}
             <div class="free-days" aria-label="Días que trabaja">${days}</div>
-            <button type="button" class="btn ${nf.kind === "free" ? "btn-gold" : "btn-white"}" data-book data-barber="${esc(b.id)}">
-                ${nf.kind === "free" ? `Separar con ${esc(b.name)}` : "Separar otro día"}</button>
+            <div class="free-actions">
+                <button type="button" class="btn ${nf.kind === "free" ? "btn-gold" : "btn-white"}" data-book data-barber="${esc(b.id)}">
+                    ${nf.kind === "free" ? (b.whatsapp ? "Separar turno" : `Separar con ${esc(b.name)}`) : "Separar otro día"}</button>
+                ${b.whatsapp ? `<a class="free-wa" href="https://wa.me/${encodeURIComponent(b.whatsapp)}?text=${encodeURIComponent(`Hola ${b.name} 👋`)}" target="_blank" rel="noopener" aria-label="Escribirle a ${esc(b.name)} por WhatsApp">${icon("whatsapp")}</a>` : ""}
+            </div>
         </article>`;
     }).join("");
     const freeCount = list.filter((x) => x.nf.kind === "free").length;
@@ -318,7 +321,14 @@ async function submit() {
     $("#done-title").textContent = `¡Listo, ${name}! Tu turno quedó separado`;
     $("#done-summary").innerHTML = summaryHtml(done.name);
     const msg = `Hola, soy ${name}. No puedo ir a mi turno con ${done.name} el ${longDate(S.date)} a las ${to12(S.time)}.`;
-    $("#cancel-link").href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
+    // si el barbero tiene WhatsApp, cancelar y escribir le llega a él; si no, a la barbería
+    const waTo = done.whatsapp || CONFIG.whatsapp;
+    $("#cancel-link").href = `https://wa.me/${waTo}?text=${encodeURIComponent(msg)}`;
+    if (done.whatsapp) {
+        $("#barber-wa").hidden = false;
+        $("#barber-wa").innerHTML = `${icon("whatsapp")} Escribirle a ${esc(done.name)}`;
+        $("#barber-wa").href = `https://wa.me/${done.whatsapp}?text=${encodeURIComponent(`Hola ${done.name}, soy ${name}. Separé turno contigo el ${longDate(S.date)} a las ${to12(S.time)} por la página.`)}`;
+    } else $("#barber-wa").hidden = true;
     try { navigator.vibrate && navigator.vibrate([12, 60, 18]); } catch {}
     goTo(5);
 }

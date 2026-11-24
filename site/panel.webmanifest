@@ -1,0 +1,16 @@
+{
+  "name": "B&W Barberos",
+  "short_name": "B&W Barberos",
+  "description": "Panel de turnos para los barberos de Black and White Barber Shop.",
+  "lang": "es-CO",
+  "id": "./panel.html",
+  "start_url": "./panel.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    { "src": "images/icon-barberos-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "images/icon-barberos-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

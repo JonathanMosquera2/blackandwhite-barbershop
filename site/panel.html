@@ -7,9 +7,11 @@
     <meta name="robots" content="noindex">
     <meta name="theme-color" content="#0a0a0a">
     <meta name="color-scheme" content="dark">
-    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="manifest" href="panel.webmanifest">
     <link rel="icon" type="image/png" href="images/favicon.png">
-    <link rel="apple-touch-icon" href="images/icon-192.png">
+    <link rel="apple-touch-icon" href="images/icon-barberos-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="B&amp;W Barberos">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
@@ -29,6 +31,11 @@
         <h1 class="title">¿Quién eres?</h1>
         <p class="lead">Toca tu nombre y pon tu clave.</p>
         <div class="who" id="who"></div>
+        <button type="button" class="install" data-install hidden>
+            <span class="install-ico" aria-hidden="true">↓</span>
+            <span><strong>Instala la app B&amp;W Barberos</strong><small>Queda el ícono en tu celular y entras directo a tus turnos</small></span>
+        </button>
+        <p class="install-ios" data-install-ios hidden>En iPhone: toca Compartir y luego "Agregar a inicio" para tener la app B&amp;W Barberos.</p>
         <form class="pin-form" id="pin-form" hidden>
             <label class="field">
                 <span id="pin-label">Clave</span>
@@ -43,6 +50,11 @@
     <main class="wrap" id="app-view" hidden>
         <p class="hello" id="hello">Hola</p>
 
+        <button type="button" class="install" data-install hidden>
+            <span class="install-ico" aria-hidden="true">↓</span>
+            <span><strong>Instala la app B&amp;W Barberos</strong><small>Queda el ícono en tu celular y entras directo a tus turnos</small></span>
+        </button>
+        <p class="install-ios" data-install-ios hidden>En iPhone: toca Compartir y luego "Agregar a inicio" para tener la app B&amp;W Barberos.</p>
         <!-- tarjeta principal: próximo cliente (barbero) o plata del día (dueño) -->
         <section class="hero-card" id="hero-card"></section>
 

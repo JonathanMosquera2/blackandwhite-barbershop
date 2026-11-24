@@ -211,3 +211,10 @@ button { font: inherit; color: inherit; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
 .who-role { display: block; margin-top: 2px; color: #d9bd6a; font-size: .88rem; font-weight: 600; }
+
+/* ---------- Instalar app ---------- */
+.install { display: flex; align-items: center; gap: 14px; width: 100%; margin: 0 0 16px; padding: 12px 14px; border: 2px dashed rgba(212, 175, 55, .6); border-radius: 18px; background: var(--card); text-align: left; cursor: pointer; }
+.install strong { display: block; font-weight: 800; }
+.install small { color: var(--muted); font-size: .86rem; }
+.install-ico { display: grid; place-items: center; width: 42px; height: 42px; flex: none; border-radius: 12px; background: var(--oro); color: var(--ink); font-size: 1.3rem; font-weight: 900; }
+.install-ios { margin: 0 0 16px; color: var(--muted); font-size: .9rem; }
