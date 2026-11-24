@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Panel | Black and White Barber Shop</title>
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="color-scheme" content="dark">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="apple-touch-icon" href="images/icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+    <p class="demo-bar" id="demo-bar" hidden>Modo demo: la clave de todos es <strong>123456</strong>. <a href="index.html">Página de clientes</a></p>
+
+    <header class="bar">
+        <a href="index.html" class="bar-brand"><span class="mark">B<i>&amp;</i>W</span><span class="bar-label">Panel</span></a>
+        <p class="live" id="live" hidden><span class="live-dot" aria-hidden="true"></span>En vivo</p>
+        <button type="button" class="bar-out" id="logout" hidden>Salir</button>
+    </header>
+
+    <!-- ============ ENTRAR ============ -->
+    <main class="wrap" id="login-view" hidden>
+        <h1 class="title">¿Quién eres?</h1>
+        <p class="lead">Toca tu nombre y pon tu clave.</p>
+        <div class="who" id="who"></div>
+        <form class="pin-form" id="pin-form" hidden>
+            <label class="field">
+                <span id="pin-label">Clave</span>
+                <input type="password" id="pin" autocomplete="current-password" required>
+            </label>
+            <button type="submit" class="btn btn-gold btn-wide">Entrar</button>
+            <p class="note" id="login-note" role="status"></p>
+        </form>
+    </main>
+
+    <!-- ============ PANEL ============ -->
+    <main class="wrap" id="app-view" hidden>
+        <p class="hello" id="hello">Hola</p>
+
+        <!-- tarjeta principal: próximo cliente (barbero) o plata del día (dueño) -->
+        <section class="hero-card" id="hero-card"></section>
+
+        <div class="days" id="day-strip" role="radiogroup" aria-label="Día"></div>
+
+        <div class="stats" id="stats"></div>
+
+        <!-- Solo dueño -->
+        <section class="owner-box" id="owner-box" hidden>
+            <h2 class="h2">Por barbero</h2>
+            <div class="bars" id="bars"></div>
+            <h2 class="h2">Cómo pagaron</h2>
+            <div class="by-pay" id="by-pay"></div>
+            <div class="chips filter" id="filter" role="radiogroup" aria-label="Ver turnos de"></div>
+        </section>
+
+        <div class="list-head">
+            <h2 class="h2" id="list-title">Clientes de hoy</h2>
+            <div class="list-actions">
+                <button type="button" class="btn btn-gold" id="walkin-btn" hidden>+ Cliente de paso</button>
+                <button type="button" class="btn btn-line" id="block-btn" hidden>Bloquear hora</button>
+            </div>
+        </div>
+
+        <!-- Registrar cliente de paso -->
+        <form class="sheet-card" id="walkin-form" hidden novalidate>
+            <h3 class="h3">Cliente de paso</h3>
+            <p class="muted">Para los que llegan sin turno. Queda como atendido y suma a la plata del día.</p>
+            <span class="label">¿Qué le hiciste?</span>
+            <div class="chips" id="walkin-services"></div>
+            <div class="two">
+                <label class="field"><span>Total</span>
+                    <input type="text" id="walkin-total" inputmode="numeric" autocomplete="off"></label>
+                <label class="field"><span>Nombre (opcional)</span>
+                    <input type="text" id="walkin-name" autocomplete="off" placeholder="Cliente de paso"></label>
+            </div>
+            <span class="label">¿Cómo pagó?</span>
+            <div class="chips" id="walkin-pay"></div>
+            <div class="row-actions">
+                <button type="submit" class="btn btn-gold">Guardar cliente</button>
+                <button type="button" class="link-btn" id="walkin-close">Cancelar</button>
+            </div>
+            <p class="note" id="walkin-note" role="status"></p>
+        </form>
+
+        <div class="sheet-card" id="block-picker" hidden>
+            <h3 class="h3">Bloquear una hora</h3>
+            <p class="muted">Para el almuerzo, una vuelta o un descanso. Si llegó un cliente sin turno, usa "+ Cliente de paso".</p>
+            <div class="slots" id="block-slots"></div>
+            <button type="button" class="link-btn" id="block-close">Listo</button>
+        </div>
+
+        <ol class="turns" id="turns"></ol>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="config.js"></script>
+    <script src="common.js"></script>
+    <script src="panel.js"></script>
+</body>
+</html>
