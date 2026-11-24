@@ -572,3 +572,39 @@ button { font: inherit; color: inherit; }
     html { scroll-behavior: auto; }
     *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- En vivo ---------- */
+.live { display: inline-flex; align-items: center; gap: 8px; margin: 12px 0 2px; padding: 5px 12px; border-radius: 999px; background: rgba(47, 210, 122, .12); color: var(--free) !important; font-weight: 700; font-size: .88rem !important; }
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--free); }
+@media (prefers-reduced-motion: no-preference) {
+    .live-dot { animation: pulse 1.6s ease-in-out infinite; }
+}
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(47, 210, 122, .6); } 50% { box-shadow: 0 0 0 6px rgba(47, 210, 122, 0); } }
+
+/* ---------- Calendario de 3 semanas ---------- */
+.cal { margin-bottom: 16px; }
+.cal-month { margin-bottom: 8px; font-stretch: 112%; font-weight: 900; font-size: 1.05rem; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.cal-h { text-align: center; font-size: .78rem; font-weight: 700; color: var(--muted-l); padding-bottom: 2px; }
+.cal-d {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    min-height: 40px;
+    border: 2px solid var(--line-l);
+    border-radius: 12px;
+    background: var(--paper);
+    font-weight: 800;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+.cal-d small { font-size: .58rem; font-weight: 700; margin-top: 2px; color: var(--muted-l); }
+.cal-d.is-today { border-color: var(--ink); }
+.cal-d.is-on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.cal-d.is-on small { color: var(--gold); }
+.cal-d:disabled { border-color: transparent; background: var(--smoke); color: #c2c2bd; cursor: not-allowed; text-decoration: line-through; }
+.cal-picked { margin: -4px 0 12px; font-weight: 800; }

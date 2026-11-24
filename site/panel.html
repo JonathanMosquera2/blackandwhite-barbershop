@@ -2,99 +2,95 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de turnos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Panel | Black and White Barber Shop</title>
     <meta name="robots" content="noindex">
-    <meta name="theme-color" content="#0d0d0d">
-    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="color-scheme" content="dark">
+    <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="apple-touch-icon" href="images/icon-192.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="panel.css">
 </head>
-<body class="panel-body">
-    <p class="demo-bar" id="demo-bar" hidden>Modo demo: la clave de todos es <strong>123456</strong>. <a href="index.html">Ir a la página de clientes</a></p>
+<body>
+    <p class="demo-bar" id="demo-bar" hidden>Modo demo: la clave de todos es <strong>123456</strong>. <a href="index.html">Página de clientes</a></p>
 
-    <header class="topbar">
-        <a href="index.html" class="brand">
-            <span class="emblem-sm" aria-hidden="true" data-config="shortName">B&amp;W</span>
-            <span data-config="name">Barbería</span>
-        </a>
-        <button type="button" class="topbar-cta topbar-out" id="logout" hidden>Salir</button>
+    <header class="bar">
+        <a href="index.html" class="bar-brand"><span class="mark">B<i>&amp;</i>W</span><span class="bar-label">Panel</span></a>
+        <p class="live" id="live" hidden><span class="live-dot" aria-hidden="true"></span>En vivo</p>
+        <button type="button" class="bar-out" id="logout" hidden>Salir</button>
     </header>
 
     <!-- ============ ENTRAR ============ -->
-    <main class="panel" id="login-view" hidden>
-        <h1 class="panel-title">Panel de turnos</h1>
-        <p class="panel-lead">¿Quién eres?</p>
+    <main class="wrap" id="login-view" hidden>
+        <h1 class="title">¿Quién eres?</h1>
+        <p class="lead">Toca tu nombre y pon tu clave.</p>
         <div class="who" id="who"></div>
         <form class="pin-form" id="pin-form" hidden>
             <label class="field">
-                <span class="ticket-label" id="pin-label">Clave</span>
-                <input type="password" id="pin" inputmode="numeric" autocomplete="current-password" required>
+                <span id="pin-label">Clave</span>
+                <input type="password" id="pin" autocomplete="current-password" required>
             </label>
-            <button type="submit" class="btn btn-red btn-wide">Entrar</button>
-            <p class="ticket-note" id="login-note" role="status"></p>
+            <button type="submit" class="btn btn-gold btn-wide">Entrar</button>
+            <p class="note" id="login-note" role="status"></p>
         </form>
     </main>
 
     <!-- ============ PANEL ============ -->
-    <main class="panel" id="app-view" hidden>
-        <div class="panel-head">
-            <h1 class="panel-title" id="hello">Hola</h1>
-            <p class="panel-lead" id="hello-sub"></p>
-        </div>
+    <main class="wrap" id="app-view" hidden>
+        <p class="hello" id="hello">Hola</p>
 
-        <div class="days-strip panel-days" id="day-strip" role="radiogroup" aria-label="Día"></div>
+        <!-- tarjeta principal: próximo cliente (barbero) o plata del día (dueño) -->
+        <section class="hero-card" id="hero-card"></section>
+
+        <div class="days" id="day-strip" role="radiogroup" aria-label="Día"></div>
 
         <div class="stats" id="stats"></div>
 
         <!-- Solo dueño -->
         <section class="owner-box" id="owner-box" hidden>
-            <h2 class="panel-h2">Por barbero</h2>
-            <div class="scroll">
-                <table class="by-barber" id="by-barber">
-                    <thead><tr><th>Barbero</th><th>Página</th><th>De paso</th><th>Atendidos</th><th>No vino</th><th>Plata</th></tr></thead>
-                    <tbody></tbody>
-                    <tfoot></tfoot>
-                </table>
-            </div>
+            <h2 class="h2">Por barbero</h2>
+            <div class="bars" id="bars"></div>
+            <h2 class="h2">Cómo pagaron</h2>
             <div class="by-pay" id="by-pay"></div>
             <div class="chips filter" id="filter" role="radiogroup" aria-label="Ver turnos de"></div>
         </section>
 
         <div class="list-head">
-            <h2 class="panel-h2" id="list-title">Turnos</h2>
+            <h2 class="h2" id="list-title">Clientes de hoy</h2>
             <div class="list-actions">
-                <button type="button" class="btn btn-red btn-small" id="walkin-btn" hidden>+ Cliente de paso</button>
-                <button type="button" class="btn btn-line btn-small" id="block-btn" hidden><span data-icon="lock"></span> Bloquear una hora</button>
+                <button type="button" class="btn btn-gold" id="walkin-btn" hidden>+ Cliente de paso</button>
+                <button type="button" class="btn btn-line" id="block-btn" hidden>Bloquear hora</button>
             </div>
         </div>
 
         <!-- Registrar cliente de paso -->
-        <form class="walkin-form" id="walkin-form" hidden novalidate>
-            <h3 class="panel-h2">Cliente de paso</h3>
-            <p class="walkin-help">Para los que llegan sin turno. Queda como atendido y suma a la plata del día.</p>
-            <span class="ticket-label">¿Qué le hiciste?</span>
+        <form class="sheet-card" id="walkin-form" hidden novalidate>
+            <h3 class="h3">Cliente de paso</h3>
+            <p class="muted">Para los que llegan sin turno. Queda como atendido y suma a la plata del día.</p>
+            <span class="label">¿Qué le hiciste?</span>
             <div class="chips" id="walkin-services"></div>
-            <div class="walkin-row">
-                <label class="field"><span class="ticket-label">Total</span>
+            <div class="two">
+                <label class="field"><span>Total</span>
                     <input type="text" id="walkin-total" inputmode="numeric" autocomplete="off"></label>
-                <label class="field"><span class="ticket-label">Nombre (opcional)</span>
+                <label class="field"><span>Nombre (opcional)</span>
                     <input type="text" id="walkin-name" autocomplete="off" placeholder="Cliente de paso"></label>
             </div>
-            <span class="ticket-label">¿Cómo pagó?</span>
+            <span class="label">¿Cómo pagó?</span>
             <div class="chips" id="walkin-pay"></div>
-            <div class="walkin-actions">
-                <button type="submit" class="btn btn-red">Guardar cliente</button>
+            <div class="row-actions">
+                <button type="submit" class="btn btn-gold">Guardar cliente</button>
                 <button type="button" class="link-btn" id="walkin-close">Cancelar</button>
             </div>
-            <p class="ticket-note" id="walkin-note" role="status"></p>
+            <p class="note" id="walkin-note" role="status"></p>
         </form>
 
-        <div class="block-picker" id="block-picker" hidden>
-            <p>Toca la hora que no vas a atender (almuerzo, una vuelta, un descanso). Para un cliente que llegó sin turno usa "+ Cliente de paso":</p>
+        <div class="sheet-card" id="block-picker" hidden>
+            <h3 class="h3">Bloquear una hora</h3>
+            <p class="muted">Para el almuerzo, una vuelta o un descanso. Si llegó un cliente sin turno, usa "+ Cliente de paso".</p>
             <div class="slots" id="block-slots"></div>
             <button type="button" class="link-btn" id="block-close">Listo</button>
         </div>

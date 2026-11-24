@@ -20,7 +20,7 @@ const CONFIG = {
     },
 
     slotMinutes: 30,   // ✏️ Cada cuánto hay un turno (30 = 8:00, 8:30, 9:00…)
-    daysAhead: 7,      // ✏️ Cuántos días adelante se puede separar
+    daysAhead: 21,     // ✏️ Cuántos días adelante se puede separar (máximo 31)
 
     // ✏️ Barberos
     //   id: corto, sin espacios ni tildes (no cambiarlo después de publicar)
@@ -36,7 +36,7 @@ const CONFIG = {
         { id: "juan",    name: "Juan",    specialty: "", days: [1,2,3,4,5,6],   emoji: "👱", photo: "", email: "juan@blackandwhite.co" },
         { id: "arley",   name: "Arley",   specialty: "", days: [1,2,3,4,5,6],   emoji: "🧔‍♂️", photo: "", email: "arley@blackandwhite.co" },
     ],
-    ownerName: "Johnedisson",               // ✏️ nombre del dueño (sale en el panel)
+    ownerName: "John Edisson",               // ✏️ nombre del dueño (sale en el panel)
     ownerEmail: "johnedisson@blackandwhite.co",   // ✏️ usuario del dueño para el panel
 
     // ✏️ Cortes (el cliente escoge uno) y adicionales (varios). Pesos colombianos

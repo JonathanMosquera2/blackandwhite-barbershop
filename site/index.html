@@ -66,7 +66,8 @@
         <section class="band band-black" id="libres">
             <div class="band-head">
                 <h2>¿Quién está libre hoy?</h2>
-                <p id="libres-sub">Se actualiza solo. Toca un barbero para separar con él.</p>
+                <p class="live" id="live"><span class="live-dot" aria-hidden="true"></span><span id="live-text">En vivo</span></p>
+                <p id="libres-sub">Toca un barbero para separar con él.</p>
             </div>
             <div class="rail" id="rail" tabindex="0" aria-label="Barberos"></div>
             <div class="rail-nav" aria-hidden="true">
@@ -148,7 +149,8 @@
                 </div>
                 <!-- Paso 3: día y hora -->
                 <div class="step" data-step="3" hidden>
-                    <div class="days" id="pick-day" role="radiogroup" aria-label="Día"></div>
+                    <div class="cal" id="pick-day" role="radiogroup" aria-label="Día"></div>
+                    <p class="cal-picked" id="cal-picked"></p>
                     <div class="slots" id="pick-slot" role="radiogroup" aria-label="Hora"></div>
                 </div>
                 <!-- Paso 4: datos -->

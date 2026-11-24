@@ -7,26 +7,38 @@ const STATUS = {
     cancelado: { label: "Cancelado", cls: "st-cx" },
     bloqueado: { label: "Bloqueada", cls: "st-bl" },
 };
+const ALL = [...CONFIG.services, ...CONFIG.extras];
 const state = { session: null, who: "", date: nowCO().date, filter: "", rows: [], seen: null, payFor: "" };
+const isOwner = () => state.session?.role === "owner";
+const isToday = () => state.date === nowCO().date;
+const avatar = (b) => b.photo ? `<img src="${esc(b.photo)}" alt="">` : esc(b.emoji || b.name.charAt(0));
+const money = (rows) => rows.reduce((a, r) => a + (r.total || 0), 0);
+const buzz = () => { try { navigator.vibrate && navigator.vibrate(8); } catch {} };
 
 /* ---------- Entrar ---------- */
 function renderWho() {
-    const people = [...CONFIG.barbers.map((b) => ({ id: b.id, name: b.name, sub: b.specialty })), { id: "owner", name: CONFIG.ownerName || "Dueño", sub: "Dueño, ve todos los turnos" }];
-    $("#who").innerHTML = people.map((p) =>
-        `<button type="button" class="who-btn" data-who="${esc(p.id)}"><strong>${esc(p.name)}</strong><span>${esc(p.sub)}</span></button>`).join("");
+    const tiles = CONFIG.barbers.map((b) =>
+        `<button type="button" class="who-btn" data-who="${esc(b.id)}"><span class="avatar">${avatar(b)}</span><strong>${esc(b.name)}</strong></button>`).join("");
+    const owner = `<button type="button" class="who-btn who-owner" data-who="owner">
+        <span class="avatar avatar-gold">B&amp;W</span><span><strong>${esc(CONFIG.ownerName || "Administrador")}</strong><span class="who-role">Administrador</span></span></button>`;
+    $("#who").innerHTML = tiles + owner;
     $("#who").addEventListener("click", (e) => {
         const b = e.target.closest(".who-btn"); if (!b) return;
-        state.who = b.dataset.who;
+        state.who = b.dataset.who; buzz();
         $$(".who-btn").forEach((x) => x.classList.toggle("is-on", x === b));
         $("#pin-label").textContent = `Clave de ${b.querySelector("strong").textContent}`;
         $("#pin-form").hidden = false;
         $("#login-note").textContent = "";
         $("#pin").value = "";
         $("#pin").focus();
+        $("#pin-form").scrollIntoView({ behavior: "smooth", block: "center" });
     });
     $("#pin-form").addEventListener("submit", async (e) => {
         e.preventDefault();
-        const res = await DB.login(state.who, $("#pin").value.trim());
+        const btn = $("#pin-form button");
+        btn.disabled = true;
+        const res = await DB.login(state.who, $("#pin").value.trim()).catch(() => ({ ok: false }));
+        btn.disabled = false;
         if (!res.ok || !res.session) {
             $("#login-note").textContent = "Clave incorrecta. Vuelve a intentar.";
             $("#login-note").classList.add("is-error");
@@ -38,32 +50,37 @@ function renderWho() {
 }
 
 /* ---------- Panel ---------- */
-const isOwner = () => state.session?.role === "owner";
-
 function startApp() {
     $("#login-view").hidden = true;
     $("#app-view").hidden = false;
     $("#logout").hidden = false;
+    $("#live").hidden = false;
     const me = barberById(state.session.barber_id);
-    $("#hello").textContent = isOwner() ? `Hola, ${CONFIG.ownerName || "jefe"}` : `Hola, ${me ? me.name : ""}`;
-    $("#hello-sub").textContent = isOwner()
-        ? "Aquí ves los turnos de la página y los clientes de paso, barbero por barbero."
-        : "Tus turnos de la página. Los que lleguen sin turno, regístralos con \"+ Cliente de paso\".";
+    const m = nowCO().minutes;
+    const greet = m < 720 ? "Buenos días" : m < 1140 ? "Buenas tardes" : "Buenas noches";
+    $("#hello").textContent = `${greet}, ${isOwner() ? (CONFIG.ownerName || "jefe") : (me ? me.name : "")}`;
     $("#owner-box").hidden = !isOwner();
-    $("#block-btn").hidden = isOwner();
-    $("#walkin-btn").hidden = isOwner();
     renderDays();
     if (isOwner()) renderFilter();
+    syncButtons();
     load();
+}
+
+function syncButtons() {
+    $("#walkin-btn").hidden = isOwner() || !isToday();
+    $("#block-btn").hidden = isOwner();
 }
 
 function renderDays() {
     const t = nowCO().date;
-    const days = Array.from({ length: 9 }, (_, i) => addDays(t, i - 2));
+    const days = Array.from({ length: 10 }, (_, i) => addDays(t, i - 3));
     $("#day-strip").innerHTML = days.map((d) =>
-        `<button type="button" class="day${d === state.date ? " is-on" : ""}" data-date="${d}" aria-pressed="${d === state.date}">
+        `<button type="button" class="day${d === state.date ? " is-on" : ""}${d === t ? " is-today" : ""}" data-date="${d}" aria-pressed="${d === state.date}">
             <span>${d === addDays(t, -1) ? "Ayer" : dateLabel(d).split(" ")[0]}</span><strong>${Number(d.slice(8))}</strong></button>`).join("");
-    $("#day-strip .is-on")?.scrollIntoView({ inline: "center", block: "nearest" });
+    requestAnimationFrame(() => {
+        const on = $("#day-strip .is-on");
+        if (on) $("#day-strip").scrollLeft = on.offsetLeft - $("#day-strip").clientWidth / 2 + on.clientWidth / 2;
+    });
 }
 
 function renderFilter() {
@@ -78,7 +95,6 @@ async function load() {
     if (!isOwner()) rows = rows.filter((r) => r.barber_id === state.session.barber_id);
     rows.sort((a, b) => a.time.localeCompare(b.time));
 
-    // aviso de turnos nuevos
     const ids = new Set(rows.map((r) => r.id));
     if (state.seen && state.seenDate === state.date) {
         const fresh = rows.filter((r) => !state.seen.has(r.id) && r.source === "web");
@@ -89,107 +105,130 @@ async function load() {
     render();
 }
 
+/* tarjeta principal: próximo cliente (barbero) o plata del día (dueño) */
+function renderHero(real, done) {
+    const total = money(done);
+    if (isOwner()) {
+        const label = isToday() ? "Hoy van" : `El ${longDate(state.date)}`;
+        const pending = real.filter((r) => r.status === "separado").length;
+        $("#hero-card").innerHTML = `<p class="hero-k">${esc(label)}</p>
+            <p class="hero-money">${cop(total)}</p>
+            <p class="hero-sub">${done.length} ${done.length === 1 ? "cliente atendido" : "clientes atendidos"}${pending ? `, ${pending} ${pending === 1 ? "turno pendiente" : "turnos pendientes"}` : ""}</p>`;
+        return;
+    }
+    const now = nowCO().minutes;
+    const next = isToday()
+        ? real.find((r) => r.status === "separado" && toMin(r.time) >= now - 15)
+        : real.find((r) => r.status === "separado");
+    let nextHtml;
+    if (next) {
+        const diff = toMin(next.time) - now;
+        const when = !isToday() ? to12(next.time) : diff <= 0 ? "Ya debería estar aquí" : diff < 60 ? `En ${diff} min` : `A las ${to12(next.time)}`;
+        nextHtml = `<p class="hero-k">${isToday() ? "Tu próximo cliente" : "Tu primer turno ese día"}</p>
+            <p class="hero-name">${esc(next.client_name)}</p>
+            <p class="hero-when"><strong>${esc(when)}</strong>${isToday() && diff > 0 && diff < 60 ? `, a las ${to12(next.time)}` : ""}</p>
+            <p class="hero-sub">${esc((next.services || []).join(", "))}, ${cop(next.total)}</p>`;
+    } else {
+        nextHtml = `<p class="hero-k">${isToday() ? "Tu próximo cliente" : "Ese día"}</p>
+            <p class="hero-name hero-none">${isToday() ? "Sin turnos pendientes" : "Sin turnos separados"}</p>
+            <p class="hero-sub">${isToday() ? "Cuando alguien separe contigo, aparece aquí y suena." : "Todavía nadie ha separado para ese día."}</p>`;
+    }
+    $("#hero-card").innerHTML = `${nextHtml}<div class="hero-foot"><span>Plata ${isToday() ? "hoy" : "ese día"}</span><strong>${cop(total)}</strong></div>`;
+}
+
 function render() {
     const rows = state.filter ? state.rows.filter((r) => r.barber_id === state.filter) : state.rows;
     const real = state.rows.filter((r) => r.status !== "bloqueado" && r.status !== "cancelado");
     const done = real.filter((r) => r.status === "atendido");
     const noshow = real.filter((r) => r.status === "no_vino");
     const web = real.filter((r) => r.source === "web");
-    const walk = real.filter((r) => r.source === "paso");
-    $("#stats").innerHTML = [
-        ["Por la página", web.length], ["De paso", walk.length], ["No vinieron", noshow.length],
-        ["Plata atendida", cop(done.reduce((a, r) => a + (r.total || 0), 0))],
-    ].map(([k, v]) => `<div class="stat"><strong>${v}</strong><span>${k}</span></div>`).join("");
+    const walkins = real.filter((r) => r.source === "paso");
+    renderHero(real, done);
+    $("#stats").innerHTML = [["Por la página", web.length], ["De paso", walkins.length], ["No vinieron", noshow.length]]
+        .map(([k, v]) => `<div class="stat"><strong>${v}</strong><span>${k}</span></div>`).join("");
 
     if (isOwner()) {
-        $("#by-barber tbody").innerHTML = CONFIG.barbers.map((b) => {
+        const per = CONFIG.barbers.map((b) => {
             const mine = real.filter((r) => r.barber_id === b.id);
             const ok = mine.filter((r) => r.status === "atendido");
-            return `<tr><td>${esc(b.name)}</td><td>${mine.filter((r) => r.source === "web").length}</td>
-                <td>${mine.filter((r) => r.source === "paso").length}</td><td>${ok.length}</td>
-                <td>${mine.filter((r) => r.status === "no_vino").length}</td><td>${cop(ok.reduce((a, r) => a + (r.total || 0), 0))}</td></tr>`;
-        }).join("");
-        const all = done.reduce((a, r) => a + (r.total || 0), 0);
-        $("#by-barber tfoot").innerHTML = `<tr><td>Total</td><td>${web.length}</td><td>${walk.length}</td><td>${done.length}</td><td>${noshow.length}</td><td>${cop(all)}</td></tr>`;
+            return { b, plata: money(ok), web: mine.filter((r) => r.source === "web").length, walk: mine.filter((r) => r.source === "paso").length, ok: ok.length };
+        }).sort((x, y) => y.plata - x.plata);
+        const max = Math.max(1, ...per.map((p) => p.plata));
+        $("#bars").innerHTML = per.map((p, i) => `<div class="bar-row${i === 0 && p.plata ? " is-top" : ""}">
+            <span class="avatar avatar-sm">${avatar(p.b)}</span>
+            <div class="bar-main">
+                <div class="bar-line"><strong>${esc(p.b.name)}</strong><span class="bar-money">${cop(p.plata)}</span></div>
+                <div class="bar-track"><span style="width:${Math.round((p.plata / max) * 100)}%"></span></div>
+                <p class="bar-meta">${p.web} por la página, ${p.walk} de paso, ${p.ok} atendidos</p>
+            </div></div>`).join("");
         const byPay = {};
         done.forEach((r) => { const k = r.payment || "Sin anotar"; byPay[k] = (byPay[k] || 0) + (r.total || 0); });
         $("#by-pay").innerHTML = Object.keys(byPay).length
-            ? Object.entries(byPay).map(([k, v]) => `<span><strong>${esc(k)}</strong> ${cop(v)}</span>`).join("")
-            : "";
+            ? Object.entries(byPay).map(([k, v]) => `<div class="pay-chip"><span>${esc(k)}</span><strong>${cop(v)}</strong></div>`).join("")
+            : `<p class="muted">Todavía no hay pagos registrados este día.</p>`;
     }
 
-    $("#list-title").textContent = `Clientes de ${state.date === nowCO().date ? "hoy" : longDate(state.date)}`;
-    if (!rows.length) {
-        $("#turns").innerHTML = `<li class="empty">No hay turnos ni clientes registrados este día.${isOwner() ? "" : " Cuando alguien separe contigo, te aparece aquí y suena."}</li>`;
-        return;
-    }
-    $("#turns").innerHTML = rows.map(turnCard).join("");
+    $("#list-title").textContent = isToday() ? "Clientes de hoy" : `Clientes del ${longDate(state.date)}`;
+    $("#turns").innerHTML = rows.length
+        ? rows.map(turnCard).join("")
+        : `<li class="empty">No hay turnos ni clientes registrados este día.</li>`;
 }
 
 function turnCard(r) {
     const st = STATUS[r.status] || STATUS.separado;
     const barber = barberById(r.barber_id);
+    const who = isOwner() && barber ? `<p class="turn-barber"><span class="avatar avatar-xs">${avatar(barber)}</span>${esc(barber.name)}</p>` : "";
     if (r.status === "bloqueado") {
         return `<li class="turn is-block"><time>${to12(r.time)}</time><div class="turn-body">
-            <p class="turn-name">Hora bloqueada${isOwner() && barber ? ` por ${esc(barber.name)}` : ""}</p>
+            <p class="turn-name">Hora bloqueada</p>${who}
             <div class="turn-actions"><button type="button" class="act" data-id="${esc(r.id)}" data-st="cancelado">Desbloquear</button></div></div></li>`;
+    }
+    if (r.source === "paso") {
+        return `<li class="turn is-walk ${st.cls}"><time>${to12(r.time)}</time><div class="turn-body">
+            <div class="turn-top"><p class="turn-name">${esc(r.client_name)}</p><span class="pill pill-walk">De paso</span></div>${who}
+            <p class="turn-services">${esc((r.services || []).join(", "))} <strong>${cop(r.total)}</strong>${r.payment ? ` <span class="turn-pay">${esc(r.payment)}</span>` : ""}</p>
+            <div class="turn-actions">${r.status === "cancelado"
+                ? `<button type="button" class="act" data-id="${esc(r.id)}" data-st="atendido">Deshacer</button>`
+                : `<button type="button" class="act" data-id="${esc(r.id)}" data-st="cancelado">Borrar (me equivoqué)</button>`}</div></div></li>`;
     }
     const wa = r.client_phone ? `https://wa.me/57${encodeURIComponent(r.client_phone)}?text=${encodeURIComponent(
         `Hola ${r.client_name}, te escribimos de ${CONFIG.name} por tu turno de las ${to12(r.time)}.`)}` : "";
-    if (r.source === "paso") {
-        return `<li class="turn st-ok is-walk">
-            <time>${to12(r.time)}</time>
-            <div class="turn-body">
-                <div class="turn-top"><p class="turn-name">${esc(r.client_name)}</p><span class="pill pill-walk">De paso</span></div>
-                ${isOwner() && barber ? `<p class="turn-barber">Con ${esc(barber.name)}</p>` : ""}
-                <p class="turn-services">${esc((r.services || []).join(", "))} <strong>${cop(r.total)}</strong>${r.payment ? ` <span class="turn-pay">${esc(r.payment)}</span>` : ""}</p>
-                <div class="turn-actions">${r.status === "cancelado"
-                    ? `<button type="button" class="act" data-id="${esc(r.id)}" data-st="atendido">Deshacer</button>`
-                    : `<button type="button" class="act" data-id="${esc(r.id)}" data-st="cancelado">Borrar (me equivoqué)</button>`}</div>
-            </div></li>`;
+    let actions;
+    if (state.payFor === r.id) {
+        actions = `<div class="pay-ask"><span>¿Cómo pagó?</span>${CONFIG.payments.map((m) =>
+            `<button type="button" class="act act-ok" data-id="${esc(r.id)}" data-st="atendido" data-pay="${esc(m)}">${esc(m)}</button>`).join("")}
+            <button type="button" class="act" data-id="${esc(r.id)}" data-st="close-pay">Volver</button></div>`;
+    } else if (r.status === "separado") {
+        actions = `<button type="button" class="act act-ok" data-id="${esc(r.id)}" data-st="ask-pay">${icon("check")} Atendido</button>
+            <button type="button" class="act" data-id="${esc(r.id)}" data-st="no_vino">No vino</button>
+            <button type="button" class="act" data-id="${esc(r.id)}" data-st="cancelado">Cancelar</button>`;
+    } else {
+        actions = `<button type="button" class="act" data-id="${esc(r.id)}" data-st="separado">Deshacer</button>`;
     }
-    const payRow = state.payFor === r.id
-        ? `<div class="pay-ask"><span>¿Cómo pagó?</span>${CONFIG.payments.map((m) =>
-              `<button type="button" class="act act-ok" data-id="${esc(r.id)}" data-st="atendido" data-pay="${esc(m)}">${esc(m)}</button>`).join("")}
-              <button type="button" class="act" data-id="${esc(r.id)}" data-st="close-pay">Volver</button></div>`
-        : "";
-    const actions = payRow ? payRow : r.status === "separado"
-        ? `<button type="button" class="act act-ok" data-id="${esc(r.id)}" data-st="ask-pay">${icon("check")} Atendido</button>
-           <button type="button" class="act" data-id="${esc(r.id)}" data-st="no_vino">No vino</button>
-           <button type="button" class="act" data-id="${esc(r.id)}" data-st="cancelado">Cancelar</button>`
-        : `<button type="button" class="act" data-id="${esc(r.id)}" data-st="separado">Deshacer</button>`;
-    return `<li class="turn ${st.cls}">
-        <time>${to12(r.time)}</time>
-        <div class="turn-body">
-            <div class="turn-top">
-                <p class="turn-name">${esc(r.client_name)}</p>
-                <span class="pill">${st.label}</span>
-            </div>
-            ${isOwner() && barber ? `<p class="turn-barber">Con ${esc(barber.name)}</p>` : ""}
-            <p class="turn-services">${esc((r.services || []).join(", "))} <strong>${cop(r.total)}</strong>${r.payment && r.status === "atendido" ? ` <span class="turn-pay">${esc(r.payment)}</span>` : ""}</p>
-            ${r.client_phone ? `<p class="turn-phone">${icon("phone")} ${esc(r.client_phone.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3"))}
-                <a href="${wa}" target="_blank" rel="noopener">${icon("whatsapp")} Escribirle</a></p>` : ""}
-            <div class="turn-actions">${actions}</div>
-        </div></li>`;
+    return `<li class="turn ${st.cls}"><time>${to12(r.time)}</time><div class="turn-body">
+        <div class="turn-top"><p class="turn-name">${esc(r.client_name)}</p><span class="pill">${st.label}</span></div>${who}
+        <p class="turn-services">${esc((r.services || []).join(", "))} <strong>${cop(r.total)}</strong>${r.payment && r.status === "atendido" ? ` <span class="turn-pay">${esc(r.payment)}</span>` : ""}</p>
+        ${r.client_phone ? `<p class="turn-phone">${icon("phone")} ${esc(r.client_phone.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3"))}
+            <a href="${wa}" target="_blank" rel="noopener">${icon("whatsapp")} Escribirle</a></p>` : ""}
+        <div class="turn-actions">${actions}</div></div></li>`;
 }
 
-/* ---------- Bloquear horas (barbero) ---------- */
+/* ---------- Bloquear horas ---------- */
 function renderBlockSlots() {
     const taken = new Set(state.rows.filter((r) => ["separado", "atendido", "bloqueado"].includes(r.status)).map((r) => r.time));
     const slots = slotsFor(state.date);
     $("#block-slots").innerHTML = slots.length
         ? slots.map((t) => `<button type="button" class="slot" data-time="${t}" ${taken.has(t) ? "disabled" : ""}>${to12(t)}</button>`).join("")
-        : `<p class="slots-msg">No quedan horas para bloquear este día.</p>`;
+        : `<p class="muted">No quedan horas para bloquear este día.</p>`;
 }
 
-/* ---------- Cliente de paso (barbero) ---------- */
+/* ---------- Cliente de paso ---------- */
 const walk = { items: new Set(), pay: "" };
 const parseMoney = (v) => Number(String(v).replace(/\D/g, "")) || 0;
 function openWalkIn() {
     walk.items = new Set(CONFIG.services.length ? [CONFIG.services[0].id] : []);
     walk.pay = CONFIG.payments[0] || "";
-    const all = [...CONFIG.services, ...CONFIG.extras];
-    $("#walkin-services").innerHTML = all.map((s) =>
+    $("#walkin-services").innerHTML = ALL.map((s) =>
         `<button type="button" class="chip" data-s="${esc(s.id)}">${esc(s.name)} <small>${cop(s.price)}</small></button>`).join("");
     $("#walkin-pay").innerHTML = CONFIG.payments.map((p) => `<button type="button" class="chip" data-p="${esc(p)}">${esc(p)}</button>`).join("");
     $("#walkin-name").value = "";
@@ -201,47 +240,44 @@ function openWalkIn() {
     $("#walkin-form").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 function paintWalkIn(resetTotal) {
-    const all = [...CONFIG.services, ...CONFIG.extras];
     $$("#walkin-services .chip").forEach((c) => { const on = walk.items.has(c.dataset.s); c.classList.toggle("is-on", on); c.setAttribute("aria-pressed", on); });
     $$("#walkin-pay .chip").forEach((c) => { const on = c.dataset.p === walk.pay; c.classList.toggle("is-on", on); c.setAttribute("aria-pressed", on); });
-    if (resetTotal) $("#walkin-total").value = cop(all.filter((s) => walk.items.has(s.id)).reduce((a, s) => a + s.price, 0));
+    if (resetTotal) $("#walkin-total").value = cop(ALL.filter((s) => walk.items.has(s.id)).reduce((a, s) => a + s.price, 0));
 }
 $("#walkin-btn").addEventListener("click", openWalkIn);
 $("#walkin-close").addEventListener("click", () => { $("#walkin-form").hidden = true; });
 $("#walkin-services").addEventListener("click", (e) => {
     const c = e.target.closest(".chip"); if (!c) return;
     walk.items.has(c.dataset.s) ? walk.items.delete(c.dataset.s) : walk.items.add(c.dataset.s);
-    paintWalkIn(true);
+    buzz(); paintWalkIn(true);
 });
-$("#walkin-pay").addEventListener("click", (e) => { const c = e.target.closest(".chip"); if (!c) return; walk.pay = c.dataset.p; paintWalkIn(false); });
+$("#walkin-pay").addEventListener("click", (e) => { const c = e.target.closest(".chip"); if (!c) return; walk.pay = c.dataset.p; buzz(); paintWalkIn(false); });
 $("#walkin-total").addEventListener("blur", () => { $("#walkin-total").value = cop(parseMoney($("#walkin-total").value)); });
 $("#walkin-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const note = $("#walkin-note");
-    const all = [...CONFIG.services, ...CONFIG.extras];
-    const items = all.filter((s) => walk.items.has(s.id));
+    const items = ALL.filter((s) => walk.items.has(s.id));
     const total = parseMoney($("#walkin-total").value);
     if (!items.length) { note.textContent = "Toca lo que le hiciste."; note.classList.add("is-error"); return; }
-    // hora: la media hora actual (si está libre la bloquea) o la hora exacta
     const now = nowCO();
-    const today = state.date === now.date;
     const exact = fromMin(now.minutes);
     const slotM = Math.floor(now.minutes / CONFIG.slotMinutes) * CONFIG.slotMinutes;
     const h = CONFIG.hours[dayOf(state.date)];
-    const slot = today && h && slotM >= toMin(h[0]) && slotM + CONFIG.slotMinutes <= toMin(h[1]) ? fromMin(slotM) : "";
+    const slot = isToday() && h && slotM >= toMin(h[0]) && slotM + CONFIG.slotMinutes <= toMin(h[1]) ? fromMin(slotM) : "";
     const btn = $("#walkin-form button[type=submit]");
     btn.disabled = true;
     const res = await DB.addWalkIn({ barber_id: state.session.barber_id, date: state.date, slot,
         exact: exact === slot ? fromMin(now.minutes + 1) : exact,
-        client_name: $("#walkin-name").value.trim() || "Cliente de paso", services: items.map((s) => s.name), total, payment: walk.pay });
+        client_name: $("#walkin-name").value.trim() || "Cliente de paso", services: items.map((s) => s.name), total, payment: walk.pay })
+        .catch(() => ({ ok: false }));
     btn.disabled = false;
     if (!res.ok) { note.textContent = "No se pudo guardar. Revisa el internet y vuelve a intentar."; note.classList.add("is-error"); return; }
     $("#walkin-form").hidden = true;
     await load();
-    toast(`Guardado: ${cop(total)}${res.time === slot ? `, y bloqueé las ${to12(slot)} en la página` : ""}`);
+    toast(`Guardado: ${cop(total)}${res.time === slot ? `. Bloqueé las ${to12(slot)} en la página` : ""}`);
 });
 
-/* ---------- Aviso de turno nuevo ---------- */
+/* ---------- Avisos ---------- */
 let audioCtx = null;
 function beep() {
     try {
@@ -264,16 +300,17 @@ function notify(r) {
     const b = barberById(r.barber_id);
     toast(`Turno nuevo: ${r.client_name} a las ${to12(r.time)}${isOwner() && b ? ` con ${b.name}` : ""}`);
     beep();
+    try { navigator.vibrate && navigator.vibrate([20, 80, 20]); } catch {}
 }
 
 /* ---------- Eventos ---------- */
 $("#day-strip").addEventListener("click", (e) => {
     const d = e.target.closest(".day"); if (!d) return;
-    state.date = d.dataset.date;
+    state.date = d.dataset.date; buzz();
     $$("#day-strip .day").forEach((x) => { const on = x === d; x.classList.toggle("is-on", on); x.setAttribute("aria-pressed", on); });
     $("#block-picker").hidden = true;
     $("#walkin-form").hidden = true;
-    $("#walkin-btn").hidden = isOwner() || state.date !== nowCO().date;
+    syncButtons();
     load();
 });
 $("#filter").addEventListener("click", (e) => {
@@ -285,10 +322,10 @@ $("#filter").addEventListener("click", (e) => {
 $("#turns").addEventListener("click", async (e) => {
     const b = e.target.closest(".act"); if (!b) return;
     const { id, st, pay } = b.dataset;
+    buzz();
     if (st === "ask-pay") { state.payFor = id; render(); return; }
     if (st === "close-pay") { state.payFor = ""; render(); return; }
     b.disabled = true;
-    // al deshacer, se borra el pago; al marcar atendido, se guarda cómo pagó
     const extra = st === "separado" ? { payment: null } : pay ? { payment: pay } : {};
     try { await DB.setStatus(id, st, extra); }
     catch { toast("No se pudo guardar. Revisa el internet."); }
@@ -309,15 +346,13 @@ $("#block-slots").addEventListener("click", async (e) => {
 $("#logout").addEventListener("click", async () => {
     await DB.logout();
     state.session = null; state.seen = null;
-    $("#app-view").hidden = true; $("#logout").hidden = true; $("#login-view").hidden = false;
+    $("#app-view").hidden = true; $("#logout").hidden = true; $("#live").hidden = true; $("#login-view").hidden = false;
     $("#pin-form").hidden = true; $$(".who-btn").forEach((x) => x.classList.remove("is-on"));
 });
-// tocar la pantalla una vez habilita el sonido en el celular
 document.addEventListener("click", () => { try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); audioCtx.resume(); } catch {} }, { once: true });
 
 /* ---------- Arranque ---------- */
 (async () => {
-    $$("[data-config]").forEach((el) => { const v = CONFIG[el.dataset.config]; if (v) el.textContent = v; });
     if (DB.mode === "demo") $("#demo-bar").hidden = false;
     paintIcons();
     renderWho();

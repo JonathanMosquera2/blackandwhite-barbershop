@@ -107,8 +107,9 @@ function renderRail() {
     }).join("");
     const freeCount = list.filter((x) => x.nf.kind === "free").length;
     $("#libres-sub").textContent = freeCount
-        ? `${freeCount} ${freeCount === 1 ? "barbero tiene" : "barberos tienen"} espacio hoy. Se actualiza solo.`
-        : "Hoy ya no quedan turnos por la página. Puedes separar para otro día o llegar y hacer fila.";
+        ? `${freeCount} de ${list.length} barberos tienen espacio hoy. Toca uno para separar con él.`
+        : "Hoy ya no quedan turnos por la página. Sepárale para otro día o llega y haz fila.";
+    $("#live-text").textContent = `En vivo, actualizado a las ${to12(fromMin(nowCO().minutes))}`;
     if (firstFree) $("#next-free-btn").textContent = `Próximo libre: ${firstFree.b.name}, ${to12(firstFree.nf.time)}`;
 }
 
@@ -217,9 +218,25 @@ function dayAvailable(d) {
 function renderDayPick() {
     const days = nextDays(CONFIG.daysAhead);
     if (!S.date || !dayAvailable(S.date)) S.date = days.find(dayAvailable) || days[0];
-    $("#pick-day").innerHTML = days.map((d) => `<button type="button" class="day${d === S.date ? " is-on" : ""}" data-date="${d}" ${dayAvailable(d) ? "" : "disabled"} role="radio" aria-checked="${d === S.date}">
-        <span>${dateLabel(d).split(" ")[0]}</span><strong>${Number(d.slice(8))}</strong></button>`).join("");
+    // calendario: semanas de lunes a domingo
+    const lead = (dayOf(days[0]) + 6) % 7;            // espacios antes del primer día
+    const head = ["L", "M", "M", "J", "V", "S", "D"].map((d) => `<span class="cal-h">${d}</span>`).join("");
+    const MONTHS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+    const months = [...new Set(days.map((d) => MONTHS[Number(d.slice(5, 7)) - 1]))];
+    const cells = days.map((d, i) => {
+        const ok = dayAvailable(d);
+        const first = Number(d.slice(8)) === 1 && i > 0;
+        return `<button type="button" class="cal-d${d === S.date ? " is-on" : ""}${i === 0 ? " is-today" : ""}${first ? " is-first" : ""}" data-date="${d}" ${ok ? "" : "disabled"} role="radio" aria-checked="${d === S.date}" aria-label="${esc(longDate(d))}${ok ? "" : ", no disponible"}">
+            ${Number(d.slice(8))}${i === 0 ? "<small>hoy</small>" : first ? `<small>${MONTHS[Number(d.slice(5, 7)) - 1].slice(0, 3)}</small>` : ""}</button>`;
+    }).join("");
+    $("#pick-day").innerHTML = `<p class="cal-month">${months.map((m) => m.charAt(0).toUpperCase() + m.slice(1)).join(" y ")}</p>
+        <div class="cal-grid">${head}${"<span></span>".repeat(lead)}${cells}</div>`;
+    paintPicked();
     loadSlots();
+}
+function paintPicked() {
+    const t = longDate(S.date);
+    $("#cal-picked").textContent = t.charAt(0).toUpperCase() + t.slice(1);
 }
 async function loadSlots() {
     $("#pick-slot").innerHTML = `<p class="slots-msg">Buscando horas libres…</p>`;
@@ -241,9 +258,10 @@ function renderSlots() {
     $("#pick-slot").innerHTML = anyFree ? html : `<p class="slots-msg">No quedan horas libres este día. Prueba otro día.</p>`;
 }
 $("#pick-day").addEventListener("click", (e) => {
-    const d = e.target.closest(".day"); if (!d || d.disabled) return;
+    const d = e.target.closest(".cal-d"); if (!d || d.disabled) return;
     S.date = d.dataset.date; S.time = ""; buzz();
-    $$("#pick-day .day").forEach((x) => { const on = x === d; x.classList.toggle("is-on", on); x.setAttribute("aria-checked", on); });
+    $$("#pick-day .cal-d").forEach((x) => { const on = x === d; x.classList.toggle("is-on", on); x.setAttribute("aria-checked", on); });
+    paintPicked();
     loadSlots();
 });
 $("#pick-slot").addEventListener("click", (e) => {
