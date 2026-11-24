@@ -8,6 +8,8 @@ const CONFIG = {
     shortName: "B&W",                                                // ✏️ va en el emblema dorado
     tagline: "Cortes, barba y cejas en el barrio La Esperanza, San José del Guaviare. Escoge tu barbero, mira las horas libres y separa tu turno en un minuto.",
     address: "Carrera 23 # 10-115, Barrio La Esperanza, San José del Guaviare", // ✏️
+    // ✏️ Link de la barbería en Google Maps (Compartir → Copiar link)
+    mapLink: "https://maps.app.goo.gl/oNzSumgutaj7pPdE9",
 
     // ✏️ WhatsApp de la barbería, solo para preguntas y cancelaciones (57 + número)
     whatsapp: "573158909903",

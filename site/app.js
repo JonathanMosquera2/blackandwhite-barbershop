@@ -52,9 +52,9 @@ function renderMenu() {
 }
 
 function renderVisit() {
-    const q = encodeURIComponent(CONFIG.address);
-    $("#map-frame").src = `https://maps.google.com/maps?q=${q}&z=16&output=embed`;
-    $("#map-link").href = `https://www.google.com/maps/search/?api=1&query=${q}`;
+    const q = encodeURIComponent(`${CONFIG.name}, ${CONFIG.address}`);
+    $("#map-frame").src = `https://maps.google.com/maps?q=${q}&z=17&output=embed`;
+    $("#map-link").href = CONFIG.mapLink || `https://www.google.com/maps/search/?api=1&query=${q}`;
     $("#payments").innerHTML = CONFIG.payments.map((p) => `<span>${esc(p)}</span>`).join("");
     const wa = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent("Hola 👋")}`;
     $("#wa-link").href = wa;
