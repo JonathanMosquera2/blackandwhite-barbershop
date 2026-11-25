@@ -18,10 +18,23 @@
     <link rel="stylesheet" href="panel.css">
 </head>
 <body>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<linearGradient id="sello-oro" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff7cf"/><stop offset=".25" stop-color="#f3d27a"/><stop offset=".48" stop-color="#d4a12a"/><stop offset=".55" stop-color="#8a5a06"/><stop offset=".7" stop-color="#d9a73a"/><stop offset="1" stop-color="#fff1b0"/></linearGradient>
+<symbol id="sello" viewBox="0 0 120 120">
+<circle cx="60" cy="60" r="57" fill="#0a0a0a" stroke="url(#sello-oro)" stroke-width="3"/>
+<circle cx="60" cy="60" r="37.5" fill="none" stroke="#d4af37" stroke-width="1"/>
+<path id="sello-arriba" d="M16,60 A44,44 0 0,1 104,60" fill="none"/>
+<path id="sello-abajo" d="M9,60 A51,51 0 0,0 111,60" fill="none"/>
+<text font-family="Oswald" font-weight="600" font-size="10" letter-spacing="2.2" fill="#f0d277" text-anchor="middle"><textPath href="#sello-arriba" startOffset="50%">BLACK AND WHITE</textPath></text>
+<text font-family="Oswald" font-weight="600" font-size="10" letter-spacing="3" fill="#f0d277" text-anchor="middle"><textPath href="#sello-abajo" startOffset="50%">BARBER SHOP</textPath></text>
+<text x="13" y="63.5" font-size="9" fill="#d4af37" text-anchor="middle">★</text><text x="107" y="63.5" font-size="9" fill="#d4af37" text-anchor="middle">★</text>
+<text x="60" y="70" text-anchor="middle" font-family="Cinzel" font-weight="900" font-size="31" fill="url(#sello-oro)">BW</text>
+<g transform="translate(60 84) scale(.45)" fill="none" stroke="#f0d277" stroke-width="3"><circle cx="-10" cy="6" r="6"/><circle cx="10" cy="6" r="6"/><path d="M-6 1 L12 -18 M6 1 L-12 -18"/></g>
+</symbol></defs></svg>
     <p class="demo-bar" id="demo-bar" hidden>Modo demo: la clave de todos es <strong>123456</strong>. <a href="index.html">Página de clientes</a></p>
 
     <header class="bar">
-        <a href="index.html" class="bar-brand"><span class="mark">B<i>&amp;</i>W</span><span class="bar-label">Panel</span></a>
+        <a href="index.html" class="bar-brand"><span class="brand-lock" aria-hidden="true"><svg class="sello" viewBox="0 0 120 120"><use href="#sello"/></svg><span class="brand-tx"><span class="brand-name">Black<i>&amp;</i>White</span></span></span><span class="bar-label">Panel</span></a>
         <p class="live" id="live" hidden><span class="live-dot" aria-hidden="true"></span>En vivo</p>
         <button type="button" class="bar-out" id="logout" hidden>Salir</button>
     </header>
