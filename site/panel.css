@@ -243,3 +243,9 @@ button { font: inherit; color: inherit; }
 .bar-brand { align-items: center; }
 
 .avatar-sello { background: none; padding: 0; border: 0; filter: drop-shadow(0 2px 6px rgba(0,0,0,.6)); }
+
+/* ---------- Logo navaja ---------- */
+.brand-navaja { display: block; height: 50px; width: auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,.6)) drop-shadow(0 0 10px rgba(255,190,60,.18)); }
+.brand-navaja-big { height: auto; width: min(300px, 78vw); margin: 0 auto 16px; filter: drop-shadow(0 0 28px rgba(255,190,60,.35)); }
+.brand-navaja-big + .foot-name { display: none; }
+@media (min-width: 900px) { .brand-navaja { height: 52px; } }
