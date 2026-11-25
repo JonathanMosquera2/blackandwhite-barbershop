@@ -20,7 +20,7 @@ function renderWho() {
     const tiles = CONFIG.barbers.map((b) =>
         `<button type="button" class="who-btn" data-who="${esc(b.id)}"><span class="avatar">${avatar(b)}</span><strong>${esc(b.name)}</strong></button>`).join("");
     const owner = `<button type="button" class="who-btn who-owner" data-who="owner">
-        <span class="avatar avatar-gold">B&amp;W</span><span><strong>${esc(CONFIG.ownerName || "Administrador")}</strong><span class="who-role">Administrador</span></span></button>`;
+        <svg class="avatar avatar-sello" viewBox="0 0 120 120" aria-hidden="true"><use href="#sello"/></svg><span><strong>${esc(CONFIG.ownerName || "Administrador")}</strong><span class="who-role">Administrador</span></span></button>`;
     $("#who").innerHTML = tiles + owner;
     $("#who").addEventListener("click", (e) => {
         const b = e.target.closest(".who-btn"); if (!b) return;
