@@ -352,22 +352,7 @@ $("#logout").addEventListener("click", async () => {
 document.addEventListener("click", () => { try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); audioCtx.resume(); } catch {} }, { once: true });
 
 /* ---------- Instalar la app B&W Barberos ---------- */
-let installEvt = null;
-const standalone = () => window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
-window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    installEvt = e;
-    if (!standalone()) $$("[data-install]").forEach((b) => (b.hidden = false));
-});
-$$("[data-install]").forEach((b) => b.addEventListener("click", async () => {
-    if (!installEvt) return;
-    installEvt.prompt();
-    try { await installEvt.userChoice; } catch {}
-    installEvt = null;
-    $$("[data-install]").forEach((x) => (x.hidden = true));
-}));
-window.addEventListener("appinstalled", () => { $$("[data-install]").forEach((x) => (x.hidden = true)); toast("¡Listo! Ya tienes la app B&W Barberos"); });
-if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone()) $$("[data-install-ios]").forEach((x) => (x.hidden = false));
+/* la lógica de instalar está en install.js */
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 
 /* ---------- Arranque ---------- */

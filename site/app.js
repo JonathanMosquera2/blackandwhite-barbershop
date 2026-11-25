@@ -385,22 +385,7 @@ document.addEventListener("click", (e) => {
 /* =========================================================
    Instalar como app
    ========================================================= */
-let installEvt = null;
-const standalone = () => window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
-window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    installEvt = e;
-    if (!standalone()) $("#install-btn").hidden = false;
-});
-$("#install-btn").addEventListener("click", async () => {
-    if (!installEvt) return;
-    installEvt.prompt();
-    try { await installEvt.userChoice; } catch {}
-    installEvt = null;
-    $("#install-btn").hidden = true;
-});
-window.addEventListener("appinstalled", () => { $("#install-btn").hidden = true; toast("¡Listo! Ya tienes la app B&W en tu celular"); });
-if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone()) $("#install-ios").hidden = false;
+/* la lógica de instalar está en install.js */
 if ("serviceWorker" in navigator && location.protocol === "https:") {
     navigator.serviceWorker.register("sw.js").catch(() => {});
 }
